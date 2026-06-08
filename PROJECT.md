@@ -70,7 +70,7 @@
 ### 優先度：高
 
 - [x] **本番用レシピインポートAPI** — `api/fetch-recipe.ts` を Vercel Edge Function として実装。`vite.config.ts` のミドルウェアはローカル開発用として継続利用
-- [ ] **画像ローカル保存** — 現在は画像URLを文字列保存するだけなので、URLが切れると画像が消える。ファイル選択でBase64やBlob URLに変換してIndexedDBへ保存する
+- [x] **画像ローカル保存** — 現在は画像URLを文字列保存するだけなので、URLが切れると画像が消える。ファイル選択でBase64やBlob URLに変換してIndexedDBへ保存する
 
 ### 優先度：中
 

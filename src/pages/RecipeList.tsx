@@ -1,22 +1,82 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db'
 import { Link } from 'react-router-dom'
-import { Clock, Search } from 'lucide-react'
-import { useState } from 'react'
+import { Clock, Search, Download, Upload } from 'lucide-react'
+import { useState, useRef } from 'react'
+import type { Recipe } from '../db'
 
 export function RecipeList() {
   const [query, setQuery] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const recipes = useLiveQuery(() =>
     query
       ? db.recipes.filter(r => r.title.includes(query)).toArray()
       : db.recipes.orderBy('createdAt').reverse().toArray()
   , [query])
 
+  const handleExport = async () => {
+    const all = await db.recipes.toArray()
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const data = all.map(({ id: _id, ...r }) => r)
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `recipes_${new Date().toISOString().slice(0, 10)}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      const data = JSON.parse(await file.text())
+      if (!Array.isArray(data)) throw new Error()
+      const toAdd: Omit<Recipe, 'id'>[] = data.map((r: Recipe) => ({
+        title: String(r.title ?? ''),
+        description: String(r.description ?? ''),
+        imageUrl: String(r.imageUrl ?? ''),
+        servings: Number(r.servings) || 2,
+        cookTimeMinutes: Number(r.cookTimeMinutes) || 0,
+        ingredients: Array.isArray(r.ingredients) ? r.ingredients : [],
+        steps: Array.isArray(r.steps) ? r.steps : [],
+        sourceUrl: r.sourceUrl,
+        createdAt: new Date(r.createdAt ?? Date.now()),
+      }))
+      await db.recipes.bulkAdd(toAdd)
+      alert(`${toAdd.length}件のレシピをインポートしました`)
+    } catch {
+      alert('インポートに失敗しました。ファイル形式を確認してください')
+    } finally {
+      e.target.value = ''
+    }
+  }
+
   return (
     <div className="min-h-screen bg-orange-50 pb-28">
       <div className="bg-white rounded-b-[32px] shadow-sm px-5 pt-14 pb-5">
         <p className="text-xs font-medium text-orange-400 mb-0.5">My Recipe</p>
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">レシピ帳</h1>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl font-bold text-gray-800">レシピ帳</h1>
+          <div className="flex gap-1">
+            <button
+              onClick={handleExport}
+              className="w-9 h-9 rounded-2xl bg-orange-50 flex items-center justify-center active:bg-orange-100"
+              title="エクスポート"
+            >
+              <Download size={16} className="text-orange-400" />
+            </button>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="w-9 h-9 rounded-2xl bg-orange-50 flex items-center justify-center active:bg-orange-100"
+              title="インポート"
+            >
+              <Upload size={16} className="text-orange-400" />
+            </button>
+            <input ref={fileInputRef} type="file" accept=".json,application/json" className="hidden" onChange={handleImport} />
+          </div>
+        </div>
         <div className="relative">
           <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-orange-300" />
           <input
