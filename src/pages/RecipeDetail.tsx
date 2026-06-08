@@ -80,7 +80,7 @@ export function RecipeDetail() {
         {/* タイトルカード */}
         <div className="bg-white rounded-3xl shadow-sm p-5">
           <h1 className="text-xl font-bold text-gray-800">{recipe.title}</h1>
-          {recipe.description && <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">{recipe.description}</p>}
+          {recipe.description && <p className="text-sm text-gray-500 mt-1.5 leading-relaxed break-words">{recipe.description}</p>}
           <div className="flex items-center gap-2 mt-3 flex-wrap">
             {recipe.cookTimeMinutes > 0 && (
               <span className="inline-flex items-center gap-1 bg-orange-50 text-orange-400 text-xs font-medium px-3 py-1 rounded-full">
@@ -130,7 +130,7 @@ export function RecipeDetail() {
             <div className="divide-y divide-orange-50">
               {recipe.ingredients.map((ing, i) => (
                 <div key={i} className="flex justify-between items-center py-2.5">
-                  <span className="text-sm text-gray-700">{ing.name}</span>
+                  <span className="text-sm text-gray-700 break-words min-w-0">{ing.name}</span>
                   <span className="text-sm font-semibold text-orange-500">
                     {formatIngAmt(ing.amount, ing.unit, ratio)}
                   </span>
@@ -155,7 +155,7 @@ export function RecipeDetail() {
                   <div className="flex-shrink-0 w-7 h-7 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center mt-0.5">
                     {i + 1}
                   </div>
-                  <p className="text-sm text-gray-700 flex-1 leading-relaxed">{step}</p>
+                  <p className="text-sm text-gray-700 flex-1 leading-relaxed break-words">{step}</p>
                 </div>
               ))}
             </div>

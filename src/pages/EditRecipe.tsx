@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { db, type Ingredient } from '../db'
-import { ArrowLeft, Plus, Trash2, Loader2 } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, Loader2, ImagePlus } from 'lucide-react'
+import { fileToDataUrl } from '../utils/image'
 
 interface FormIngredient extends Ingredient {
   key: number
@@ -26,6 +27,19 @@ export function EditRecipe() {
   const [steps, setSteps] = useState([''])
   const [sourceUrl, setSourceUrl] = useState('')
   const [saving, setSaving] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleImageFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      setImageUrl(await fileToDataUrl(file))
+    } catch {
+      alert('画像の読み込みに失敗しました')
+    } finally {
+      e.target.value = ''
+    }
+  }
 
   useEffect(() => {
     db.recipes.get(Number(id)).then(recipe => {
@@ -106,8 +120,18 @@ export function EditRecipe() {
             />
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1.5">完成画像URL</label>
-            <input value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="https://..." className={inputCls} />
+            <label className="block text-xs text-gray-500 mb-1.5">完成画像</label>
+            <div className="flex gap-2">
+              <input value={imageUrl.startsWith('data:') ? '' : imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="https://..." className={`flex-1 ${smallInputCls}`} />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-11 h-11 bg-orange-50 rounded-2xl flex items-center justify-center flex-shrink-0 active:bg-orange-100"
+              >
+                <ImagePlus size={18} className="text-orange-400" />
+              </button>
+            </div>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageFile} />
             {imageUrl && <img src={imageUrl} alt="preview" className="mt-2 w-full h-32 object-cover rounded-2xl" />}
           </div>
           <div className="flex gap-3">

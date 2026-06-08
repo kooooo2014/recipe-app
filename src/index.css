@@ -4,7 +4,17 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+html {
+  overflow-x: hidden;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', sans-serif;
   overscroll-behavior: none;
+  overflow-wrap: break-word;
+}
+
+/* iOS セーフエリア（ホームインジケーター）対応 */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
 }
